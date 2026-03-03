@@ -42,6 +42,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -71,8 +74,8 @@ jobs:
             echo "Version unchanged at $CURRENT_VERSION"
           fi
 
-      - name: Publish to npm
+      - name: Publish to npm with provenance
         if: steps.version.outputs.changed == 'true'
-        run: npm publish --access public
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
