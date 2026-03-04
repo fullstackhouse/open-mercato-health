@@ -74,8 +74,6 @@ jobs:
             echo "Version unchanged at $CURRENT_VERSION"
           fi
 
-      - name: Publish to npm with provenance
+      - name: Publish to npm with provenance (OIDC)
         if: steps.version.outputs.changed == 'true'
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
