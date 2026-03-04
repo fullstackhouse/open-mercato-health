@@ -1,6 +1,6 @@
 {
   "name": "@fullstackhouse/open-mercato-health",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Health check endpoints for Open Mercato applications",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,6 +21,10 @@
     "./integrations/nextjs": {
       "types": "./dist/integrations/nextjs.d.ts",
       "default": "./dist/integrations/nextjs.js"
+    },
+    "./modules/*": {
+      "types": "./dist/modules/*/index.d.ts",
+      "default": "./dist/modules/*/index.js"
     }
   },
   "files": [
@@ -37,9 +41,21 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
+    "@mikro-orm/postgresql": ">=6.0.0",
+    "@open-mercato/cache": "*",
+    "@open-mercato/shared": "*",
     "next": ">=14.0.0"
   },
   "peerDependenciesMeta": {
+    "@mikro-orm/postgresql": {
+      "optional": true
+    },
+    "@open-mercato/cache": {
+      "optional": true
+    },
+    "@open-mercato/shared": {
+      "optional": true
+    },
     "next": {
       "optional": true
     }
