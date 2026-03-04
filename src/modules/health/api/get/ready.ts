@@ -1,8 +1,5 @@
-import type { EntityManager } from '@mikro-orm/postgresql'
-import type { CacheStrategy } from '@open-mercato/cache'
 import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
 import { ReadinessOrchestrator } from '../../../../orchestrator'
-import { QueueRedisReadyCheckStrategy } from '../../../../strategies'
 import type { OpenApiMethodDoc, OpenApiRouteDoc } from '@open-mercato/shared/lib/openapi'
 import { NextResponse } from 'next/server'
 
@@ -14,15 +11,11 @@ export const metadata = {
 
 export async function GET() {
   const container = await createRequestContainer()
-  const em = container.resolve('em') as EntityManager
-  const cache = container.resolve('cache') as CacheStrategy
 
   const orchestrator = new ReadinessOrchestrator({
-    em,
-    cache,
-    additionalStrategies: [new QueueRedisReadyCheckStrategy()],
+    container,
   })
-  const result = await orchestrator.run()
+  const result = await orchestrator.checkReadiness()
   const statusCode = result.status === 'fail' ? 503 : 200
 
   return NextResponse.json(result, { status: statusCode })
