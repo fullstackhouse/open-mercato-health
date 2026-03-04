@@ -22,7 +22,7 @@ export default defineConfig([
       '@open-mercato/shared',
     ],
   },
-  // Module files (Open Mercato integration) - no DTS, types come from runtime
+  // Module files (Open Mercato integration)
   {
     entry: {
       'modules/health/index': 'src/modules/health/index.ts',
@@ -30,7 +30,7 @@ export default defineConfig([
       'modules/health/api/get/ready': 'src/modules/health/api/get/ready.ts',
     },
     format: ['esm'],
-    dts: false,
+    dts: true,
     clean: false,
     splitting: false,
     sourcemap: true,
