@@ -22,13 +22,22 @@
       "types": "./dist/integrations/nextjs.d.ts",
       "default": "./dist/integrations/nextjs.js"
     },
-    "./modules/*": {
-      "types": "./dist/modules/*/index.d.ts",
-      "default": "./dist/modules/*/index.js"
+    "./modules/health/index": {
+      "types": "./src/modules/health/types.d.ts",
+      "default": "./dist/modules/health/index.js"
+    },
+    "./modules/health/api/get/live": {
+      "types": "./src/modules/health/types.d.ts",
+      "default": "./dist/modules/health/api/get/live.js"
+    },
+    "./modules/health/api/get/ready": {
+      "types": "./src/modules/health/types.d.ts",
+      "default": "./dist/modules/health/api/get/ready.js"
     }
   },
   "files": [
     "dist",
+    "src",
     "README.md"
   ],
   "scripts": {
