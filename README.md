@@ -15,14 +15,23 @@ npm install @fullstackhouse/open-mercato-health
 ```typescript
 // app/api/health/live/route.ts
 import { createNextHealthHandlers } from '@fullstackhouse/open-mercato-health/integrations/nextjs'
-import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
 
-const handlers = createNextHealthHandlers(createRequestContainer)
+const handlers = createNextHealthHandlers(async () => {
+  const { createRequestContainer } = await import('@open-mercato/shared/lib/di/container')
+  return createRequestContainer()
+})
 export const GET = handlers.live
 
 // app/api/health/ready/route.ts
 export const GET = handlers.ready
+export const dynamic = 'force-dynamic'
 ```
+
+> **Why the lazy loader?** Under Turbopack production builds, a static top-level
+> `import { createRequestContainer }` can be captured as `undefined` inside the
+> handler closure, causing `getContainer is not a function` at runtime. Passing
+> a `() => import(...)` loader defers module resolution until request time and
+> sidesteps the bug. The same pattern applies to `createNextReadyHandler`.
 
 ## Endpoints
 
@@ -135,9 +144,13 @@ Use custom strategies with the orchestrator:
 ```typescript
 import { createNextHealthHandlers } from '@fullstackhouse/open-mercato-health/integrations/nextjs'
 
-const handlers = createNextHealthHandlers(createRequestContainer, {
-  additionalStrategies: [new StripeReadyCheckStrategy(container)],
-})
+const handlers = createNextHealthHandlers(
+  async () => {
+    const { createRequestContainer } = await import('@open-mercato/shared/lib/di/container')
+    return createRequestContainer()
+  },
+  { additionalStrategies: [new StripeReadyCheckStrategy(container)] },
+)
 ```
 
 ## API Reference

@@ -13,14 +13,22 @@ import type { ReadyHandlerOptions, HealthContainer } from '../types'
  * ```typescript
  * // app/api/health/live/route.ts
  * import { createNextHealthHandlers } from '@fullstackhouse/open-mercato-health/integrations/nextjs'
- * import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
  *
- * const handlers = createNextHealthHandlers(createRequestContainer)
+ * const handlers = createNextHealthHandlers(async () => {
+ *   const { createRequestContainer } = await import('@open-mercato/shared/lib/di/container')
+ *   return createRequestContainer()
+ * })
  * export const GET = handlers.live
  *
  * // app/api/health/ready/route.ts
  * export const GET = handlers.ready
+ * export const dynamic = 'force-dynamic'
  * ```
+ *
+ * Note: pass a lazy loader (as above) instead of the container factory directly.
+ * Under Turbopack production builds, a static top-level import of the DI factory
+ * can be captured as `undefined` inside the handler closure, causing runtime
+ * `getContainer is not a function` errors.
  */
 export function createNextHealthHandlers(
   getContainer: () => Promise<HealthContainer> | HealthContainer,
@@ -77,9 +85,17 @@ export function createNextHealthHandlers(
  *
  * // app/api/health/ready/route.ts
  * import { createNextReadyHandler } from '@fullstackhouse/open-mercato-health/integrations/nextjs'
- * import { createRequestContainer } from '@open-mercato/shared/lib/di/container'
- * export const GET = createNextReadyHandler(createRequestContainer)
+ *
+ * export const GET = createNextReadyHandler(async () => {
+ *   const { createRequestContainer } = await import('@open-mercato/shared/lib/di/container')
+ *   return createRequestContainer()
+ * })
+ * export const dynamic = 'force-dynamic'
  * ```
+ *
+ * See the note on `createNextHealthHandlers` about passing a lazy loader
+ * instead of importing the DI factory statically — the same Turbopack caveat
+ * applies here.
  */
 export function createNextLiveHandler(): () => Promise<Response> {
   const handler = createLivenessHandler()
