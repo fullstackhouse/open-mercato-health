@@ -68,7 +68,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE=$(node -p "require('./package.json').version")
-            PREVIEW="${BASE}-pr.${{ github.event.pull_request.number }}.${GITHUB_SHA::7}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            PREVIEW="${BASE}-pr.${{ github.event.pull_request.number }}.${HEAD_SHA:0:7}"
             npm version "$PREVIEW" --no-git-tag-version
             echo "tag=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
             echo "publish=true" >> $GITHUB_OUTPUT
