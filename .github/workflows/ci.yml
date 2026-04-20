@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
 
 jobs:
@@ -77,3 +78,36 @@ jobs:
       - name: Publish to npm
         if: steps.version.outputs.changed == 'true'
         run: npm publish --provenance --access public
+
+  publish-preview:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'publish-preview')
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Set preview version
+        run: |
+          BASE=$(node -p "require('./package.json').version")
+          SHA=${GITHUB_SHA::7}
+          PREVIEW="${BASE}-pr.${{ github.event.pull_request.number }}.${SHA}"
+          npm version "$PREVIEW" --no-git-tag-version
+          echo "Publishing preview version $PREVIEW"
+
+      - name: Publish preview to npm
+        run: npm publish --provenance --access public --tag pr-${{ github.event.pull_request.number }}
