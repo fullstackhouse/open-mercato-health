@@ -1,6 +1,6 @@
 {
   "name": "@fullstackhouse/open-mercato-health",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Health check endpoints for Open Mercato applications",
   "type": "module",
   "main": "./dist/index.js",
