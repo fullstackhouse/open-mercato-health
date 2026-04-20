@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -42,21 +42,20 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: |
+      ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main')
+      || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 22.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Upgrade npm for OIDC support
-        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci
@@ -64,19 +63,30 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check if version changed
-        id: version
+      - name: Resolve version and dist-tag
+        id: resolve
         run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          NPM_VERSION=$(npm view @fullstackhouse/open-mercato-health version 2>/dev/null || echo "0.0.0")
-          if [ "$CURRENT_VERSION" != "$NPM_VERSION" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Version changed from $NPM_VERSION to $CURRENT_VERSION"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE=$(node -p "require('./package.json').version")
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            PREVIEW="${BASE}-pr.${{ github.event.pull_request.number }}.${HEAD_SHA:0:7}"
+            npm version "$PREVIEW" --no-git-tag-version
+            echo "tag=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            echo "publish=true" >> $GITHUB_OUTPUT
+            echo "Preview version: $PREVIEW"
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "Version unchanged at $CURRENT_VERSION"
+            CURRENT=$(node -p "require('./package.json').version")
+            PUBLISHED=$(npm view @fullstackhouse/open-mercato-health version 2>/dev/null || echo "0.0.0")
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            if [ "$CURRENT" != "$PUBLISHED" ]; then
+              echo "publish=true" >> $GITHUB_OUTPUT
+              echo "Release version: $CURRENT (was $PUBLISHED)"
+            else
+              echo "publish=false" >> $GITHUB_OUTPUT
+              echo "Version unchanged at $CURRENT — skipping publish"
+            fi
           fi
 
       - name: Publish to npm
-        if: steps.version.outputs.changed == 'true'
-        run: npm publish --provenance --access public
+        if: steps.resolve.outputs.publish == 'true'
+        run: npm publish --provenance --access public --tag ${{ steps.resolve.outputs.tag }}
