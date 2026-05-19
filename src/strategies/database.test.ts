@@ -9,17 +9,13 @@ function createMockContainer(
     selectError?: Error
   } = {}
 ): HealthContainer {
-  const mockKnex = {
-    raw: vi.fn().mockImplementation(async () => {
+  const mockConnection = {
+    execute: vi.fn().mockImplementation(async () => {
       if (overrides.selectError) {
         throw overrides.selectError
       }
-      return overrides.selectResult ?? [[{ '1': 1 }]]
+      return overrides.selectResult ?? [{ '1': 1 }]
     }),
-  }
-
-  const mockConnection = {
-    getKnex: () => mockKnex,
   }
 
   const mockEm = {
