@@ -22,12 +22,8 @@ export class DatabaseReadyCheckStrategy extends BaseReadyCheckStrategy {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const em = this.container.resolve<any>('em')
 
-    // MikroORM EntityManager with Knex connection
     const connection = em.getConnection()
-    const knex = connection.getKnex?.() ?? connection
-
-    // Execute simple connectivity check
-    await knex.raw('SELECT 1')
+    await connection.execute('SELECT 1')
 
     return { ok: true }
   }
