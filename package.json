@@ -43,7 +43,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
@@ -76,6 +76,7 @@
     "@open-mercato/cache": "*",
     "@open-mercato/shared": "*",
     "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.0.0",
     "next": "^15.0.0",
     "tsup": "^8.0.0",
