@@ -230,8 +230,8 @@ readinessProbe:
 
 Automatic. Every merge to `main` that changes something a user can see is released: the
 version comes from the conventional commits since the last tag (`fix`/`perf`/revert → patch,
-`feat` → minor, `!` → major), and the GitHub Release lists them. `chore`/`docs`/`refactor`/
-`test`/`ci` release nothing. Any merge method works; `release-commits` checks that the PR title
+`feat` → minor, `!` → major), and the GitHub Release lists them.
+`chore`/`docs`/`refactor`/`test`/`ci` release nothing. Any merge method works; `release-commits` checks that the PR title
 states the release its commits will cause. In 0.x, a breaking change is a `feat:` with an
 upgrade note in this README, because `!` cuts 1.0.0. `package.json` says `0.0.0-development`:
 the version is the tag (`git describe --tags`) or `npm view`. Every non-draft PR publishes a
