@@ -228,35 +228,20 @@ readinessProbe:
 
 ## Releasing
 
-Releases are driven by `package.json`'s `version` field and cut by CI on push to `main`.
-
-### Cutting a release
-
-1. Bump `version` in `package.json` following [semver](https://semver.org/).
-2. Open a PR, get it reviewed, merge to `main`.
-3. The `publish` job on `main` publishes to npm under dist-tag `latest`.
-
-If a merge to `main` doesn't change the version, the publish step is a no-op and logs `Version unchanged at X.Y.Z — skipping publish`.
-
-### PR previews
-
-Every same-repo PR automatically publishes a prerelease so reviewers can install the exact code in the PR:
-
-- Version: `<current-version>-pr.<pr-number>.<short-sha>`
-- Dist-tag: `pr-<pr-number>`
-
-Install a preview build:
+Automatic. Every merge to `main` that changes something a user can see is released: the
+version comes from the conventional commits since the last tag (`fix`/`perf`/revert → patch,
+`feat` → minor, `!` → major), and the GitHub Release lists them. `chore`/`docs`/`refactor`/
+`test`/`ci` release nothing. Any merge method works; `release-commits` checks that the PR title
+states the release its commits will cause. In 0.x, a breaking change is a `feat:` with an
+upgrade note in this README, because `!` cuts 1.0.0. `package.json` says `0.0.0-development`:
+the version is the tag (`git describe --tags`) or `npm view`. Every non-draft PR publishes a
+preview under dist-tag `pr-<N>`.
 
 ```bash
 npm install @fullstackhouse/open-mercato-health@pr-123
 ```
 
-PRs from forks skip preview publishing (npm OIDC tokens aren't available to forks).
-
-### Publish mechanism
-
-- Uses [npm OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers) with `--provenance` — no `NPM_TOKEN` secret is used.
-- Runs on Node 24 (which bundles npm 11, required for OIDC).
+Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) over OIDC from `ci.yml`, with provenance — no token is stored.
 
 ## License
 
